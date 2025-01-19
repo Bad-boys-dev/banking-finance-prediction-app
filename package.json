@@ -9,13 +9,21 @@
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "bfp-ms-account": "npm run start --workspace bfp-ms-account"
+    "bfp-ms-account": "npm run start --workspace bfp-ms-account",
+    "build-account-service": "npm run build -w bfp-ms-account"
   },
   "author": "Emmanuel Okuchukwu and Anoj Kunes",
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
   }
 }

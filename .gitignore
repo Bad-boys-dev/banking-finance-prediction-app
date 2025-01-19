@@ -1,3 +1,7 @@
 /node_modules
 bfp-ms-account/tsconfig.tsbuildinfo
 bfp-ms-instutions/tsconfig.tsbuildinfo
+bfp-ms-account/build
+bfp-ms-instutions/build
+.env
+.env.local

@@ -4,7 +4,7 @@
   "main": "src/index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc --build",
+    "build": "tsc",
     "start": "node build/index.js"
   },
   "keywords": [],
@@ -13,11 +13,10 @@
   "description": "",
   "dependencies": {
     "drizzle-orm": "^0.38.4",
-    "express": "^4.21.2",
-    "moment": "^2.30.1",
     "pg": "^8.13.1"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0"
+    "@types/pg": "^8.11.10",
+    "drizzle-kit": "^0.30.2"
   }
 }
