@@ -1,0 +1,20 @@
+{
+  "name": "banking-finance-prediction-app",
+  "version": "0.0.0",
+  "main": "index.js",
+  "private": true,
+  "workspaces": [
+    "bfp-ms-account",
+    "bfp-ms-institutions"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Emmanuel Okuchukwu and Anoj Kunes",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
+}

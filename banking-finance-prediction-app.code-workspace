@@ -1,0 +1,16 @@
+{
+  "folders": [
+    {
+      "path": "./",
+      "name": "banking-finance-prediction-app"
+    },
+    {
+      "path": "./bfp-ms-account",
+      "name": "bfp-ms-account"
+    },
+    {
+      "path": "./bfp-ms-institutions",
+      "name": "bfp-ms-institutions"
+    }
+  ]
+}
