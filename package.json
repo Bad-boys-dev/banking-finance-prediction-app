@@ -8,7 +8,8 @@
     "bfp-ms-institutions"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "bfp-ms-account": "npm run start --workspace bfp-ms-account"
   },
   "author": "Emmanuel Okuchukwu and Anoj Kunes",
   "license": "ISC",

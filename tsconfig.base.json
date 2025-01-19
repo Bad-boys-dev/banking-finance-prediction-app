@@ -9,6 +9,14 @@
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["services/shared/src/*"]
-    }
+    },
+    "references": [
+      {
+        "path": "./bfp-ms-account"
+      },
+      {
+        "path": "./bfp-ms-institutions"
+      }
+    ]
   }
 }
