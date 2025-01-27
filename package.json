@@ -10,7 +10,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "bfp-ms-account": "npm run start --workspace bfp-ms-account",
-    "build-account-service": "npm run build -w bfp-ms-account"
+    "build-account-service": "npm run build -w bfp-ms-account",
+    "format-account-service": "npm run format -w bfp-ms-account"
   },
   "author": "Emmanuel Okuchukwu and Anoj Kunes",
   "license": "ISC",
@@ -24,6 +25,10 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "go-cardless-client-lib": "^2.0.4",
+    "lodash": "^4.17.21",
+    "prettier": "^3.4.2",
+    "uuid": "^11.0.5"
   }
 }

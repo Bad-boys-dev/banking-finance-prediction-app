@@ -8,6 +8,6 @@ const pool = new Pool({
   password: process.env.DB_PWD,
   database: 'gocardless_db',
   ssl: false,
-})
+});
 
 export const db = drizzle(pool);

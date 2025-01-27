@@ -1,4 +1,4 @@
-import { pgTable, text, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, text, varchar, integer } from 'drizzle-orm/pg-core';
 
 const details = pgTable('details', {
   id: text('id').primaryKey(),
@@ -6,6 +6,6 @@ const details = pgTable('details', {
   iban: varchar('iban'),
   scan: varchar('scan'),
   currency: varchar('currency').notNull(),
-  ownerName: varchar('ownerName')
+  ownerName: varchar('ownerName'),
 });
 export default details;

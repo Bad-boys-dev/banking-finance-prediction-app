@@ -5,3 +5,5 @@ bfp-ms-account/build
 bfp-ms-instutions/build
 .env
 .env.local
+/drizzle
+/bfp-ms-account/src/utils/bankDetails.json

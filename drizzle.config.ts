@@ -1,9 +1,10 @@
 import 'dotenv/config';
 import { defineConfig } from 'drizzle-kit';
+import './bfp-ms-account/src/models'
 
 export default defineConfig({
   out: './drizzle',
-  schema: './src/db/*.ts',
+  schema: './bfp-ms-account/src/models',
   dialect: 'postgresql',
   dbCredentials: {
     host: 'localhost',
