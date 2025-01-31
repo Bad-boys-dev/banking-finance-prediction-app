@@ -1,7 +1,11 @@
 import { v4 as uuid } from 'uuid';
 import { db } from '../../../db';
-import { details, transaction as tSchema } from '../../../models';
-import { account, transactions, balances } from '../../../utils/bankDetails.json';
+import { details, transaction as tSchema, balance } from '../../../models';
+import {
+  account,
+  transactions,
+  balances,
+} from '../../../utils/bankDetails.json';
 import generateUid from '../../../utils/generateUid';
 import { eq } from 'drizzle-orm';
 
@@ -52,6 +56,28 @@ const saveTransactionsToDB = async (accountId: string) => {
     throw err;
   }
 };
+
+const saveBalancesToDB = async (accountId: string) => {
+  const resp = balances;
+
+  let command;
+  let rowCount;
+  try {
+    const mappedBalances = resp?.map((balance: any) => ({
+      id: uuid(),
+      accountDetailsId: accountId,
+      ...balance,
+    }));
+    //@ts-ignore
+    ({ command, rowCount } = await db.insert(balance).values(mappedBalances));
+  } catch (err: any) {
+    console.error(err);
+    throw err;
+  }
+
+  return { command, rowCount };
+};
+
 const retrieveBankDataFromDB = async () => {
   try {
     const response = await db
@@ -122,5 +148,6 @@ const retrieveBankDataFromDB = async () => {
 export const service = {
   saveBankDetails,
   saveTransactionsToDB,
+  saveBalancesToDB,
   retrieveBankDataFromDB,
 };
