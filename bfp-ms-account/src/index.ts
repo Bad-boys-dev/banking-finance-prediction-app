@@ -1,8 +1,10 @@
 import express, { Request, Response } from 'express';
+import 'express-async-errors';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import detailsRouter from './api/router/bankDetails/details.router';
 import accessRouter from './api/router/access/access.router';
+import { ErrorHandler } from './middleware';
 
 dotenv.config();
 const app = express();
@@ -21,6 +23,9 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/v1/details', detailsRouter);
 app.use('/api/v1/access', accessRouter);
+
+//@ts-ignore
+app.use(ErrorHandler);
 
 const PORT = process.env.PORT ?? 8083;
 

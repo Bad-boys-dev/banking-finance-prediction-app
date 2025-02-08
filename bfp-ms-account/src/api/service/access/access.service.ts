@@ -1,4 +1,5 @@
 import * as connector from '../../../goCardless/gocardless';
+import { BadRequest } from '../../../errors';
 
 const createUserAgreement = async (
   institutionId: string,
@@ -8,6 +9,8 @@ const createUserAgreement = async (
 ) => {
   const { access } = await connector.retrieveAccessToken();
   // const { access } = await store();
+
+  if (!access) throw new BadRequest('Access token missing!');
 
   let response: object;
 
@@ -50,8 +53,6 @@ const createRequisition = async (
 };
 
 const getRequisitionAccounts = async (requisitionId: string) => {
-  console.log(requisitionId);
-
   const { access: access_token } = await connector.retrieveAccessToken();
   let requisition: object;
 
@@ -61,6 +62,7 @@ const getRequisitionAccounts = async (requisitionId: string) => {
     console.log('Failed to get requisition for end user:', err);
     throw new Error(err.message);
   }
+
   return requisition;
 };
 

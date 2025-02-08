@@ -85,7 +85,7 @@ export const linkToBuildForUser = async (payload: IBuildLinkPayload) =>
     body: {
       institution_id: payload.institution_id,
       agreement: payload.agreement_id,
-      redirect: 'http://ms-gocardless.com/oauth/callback',
+      redirect: 'http://localhost:5173/oauth/callback',
     },
     access_token: payload.access_token,
   });
@@ -112,7 +112,7 @@ export const accessAccounts = async (
   access_token: string
 ) =>
   await goCardlessClient({
-    url: `${process.env.BASE_URL}/api/v2/accounts/${account_id}/transactions/`,
+    url: `${process.env.BASE_URL}/api/v2/accounts/${account_id}/transactions`,
     method: 'GET',
     body: null,
     access_token,

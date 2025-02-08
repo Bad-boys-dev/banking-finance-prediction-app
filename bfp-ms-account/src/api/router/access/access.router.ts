@@ -1,10 +1,17 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { service } from '../../service/access/access.service';
+import {
+  createUserAgreementSchema,
+  requisitionsSchema,
+  retrieveAccountSchema,
+} from '../../schema';
+import { validateBody } from '../../../middleware';
 
 const router = express.Router();
 
 router.post(
   '/createUserAgreement',
+  validateBody(createUserAgreementSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     const {
       institutionId,
@@ -29,6 +36,7 @@ router.post(
 
 router.post(
   '/requisitions',
+  validateBody(requisitionsSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     const { institutionId, agreementId } = req.body;
     try {
@@ -43,6 +51,7 @@ router.post(
 
 router.get(
   '/accounts/:requisitionId',
+  validateBody(retrieveAccountSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     const { requisitionId } = req.params;
     try {

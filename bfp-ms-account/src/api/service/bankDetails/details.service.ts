@@ -1,13 +1,15 @@
 import { v4 as uuid } from 'uuid';
+import { eq } from 'drizzle-orm';
 import { db } from '../../../db';
 import { details, transaction as tSchema, balance } from '../../../models';
 import {
   account,
-  transactions,
+  // transactions,
   balances,
 } from '../../../utils/bankDetails.json';
 import generateUid from '../../../utils/generateUid';
-import { eq } from 'drizzle-orm';
+import * as connector from '../../../goCardless/gocardless';
+import { BadRequest } from '../../../errors';
 
 const saveBankDetails = async () => {
   const response = account;
@@ -29,6 +31,29 @@ const saveBankDetails = async () => {
 };
 
 const saveTransactionsToDB = async (accountId: string) => {
+  console.log(accountId);
+
+  if (!accountId)
+    throw new Error('AccountId is missing, please add to proceed!');
+
+  const { access: access_token } = await connector.retrieveAccessToken();
+  let transactions: any;
+
+  try {
+    ({ transactions } = await connector.accessAccounts(
+      accountId,
+      access_token
+    ));
+
+    if (transactions.length === 0)
+      throw new BadRequest(
+        'No transactions available, please try and connect to bank again'
+      );
+  } catch (err: any) {
+    console.log('Failed to acquire end user account transactions:', err);
+    throw new Error(err.message);
+  }
+
   const response = transactions?.booked;
   let command, rowCount;
 
@@ -38,7 +63,7 @@ const saveTransactionsToDB = async (accountId: string) => {
         creditorName: transaction.creditorName,
         debtorName: transaction.debtorName,
       }),
-      accountDetailsId: accountId,
+      accountDetailsId: 'd2498872-6ac3-480c-b4ef-da4454770ef2', //TODO: to replace with request body input later
       ...transaction,
     }));
 
@@ -88,6 +113,9 @@ const retrieveBankDataFromDB = async () => {
         transactionId: tSchema.id,
         transactionAmount: tSchema.transactionAmount,
         valueDate: tSchema.valueDate,
+        valueDateTime: tSchema.valueDateTime,
+        remittanceInformationUnstructuredArray:
+          tSchema.remittanceInformationUnstructuredArray,
       })
       .from(details)
       .leftJoin(tSchema, eq(details.id, tSchema.accountDetailsId));
@@ -102,7 +130,9 @@ const retrieveBankDataFromDB = async () => {
           amount: string;
           currency: string;
         };
+        receiver: Array<String>;
         valueDate: string;
+        valueDateTime: string;
       }[];
     };
 
@@ -133,6 +163,8 @@ const retrieveBankDataFromDB = async () => {
           id: row.transactionId,
           transactionAmount: row.transactionAmount,
           valueDate: row.valueDate,
+          valueDateTime: row.valueDateTime,
+          receiver: row.remittanceInformationUnstructuredArray,
         };
         bankDetail.transactions.push(transaction);
       }
