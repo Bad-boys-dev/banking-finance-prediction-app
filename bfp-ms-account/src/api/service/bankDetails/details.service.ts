@@ -136,6 +136,7 @@ const retrieveBankDataFromDB = async () => {
       }[];
     };
 
+    // TODO: next is to add the account balance details to this array
     const fullBankAccount: BankDeets[] = [];
 
     for (const row of response) {
