@@ -1,6 +1,7 @@
 // @ts-ignore
 import { goCardlessClient } from 'go-cardless-client-lib/dist';
 import cache from '../utils/cache';
+import logger from '../utils/logger';
 
 export interface IBuildLinkPayload {
   institution_id: string;
@@ -19,7 +20,6 @@ export const getAccessToken = async (body: object) =>
   });
 
 export const retrieveAccessToken = async () => {
-  // const cachedToken = nodeCacheStore.get('token_cached');
   const cachedToken = cache.get('token_cached');
 
   if (cachedToken) return cachedToken;
@@ -34,9 +34,10 @@ export const retrieveAccessToken = async () => {
 
   const ttl = 36000;
   const cacheTTL = Math.max(ttl, 900);
-  console.log(`...caching accessToken:`, accessToken);
 
   cache.set('token_cached', accessToken, cacheTTL);
+  logger().info('Successfully cached an accessToken');
+
   return accessToken;
 };
 

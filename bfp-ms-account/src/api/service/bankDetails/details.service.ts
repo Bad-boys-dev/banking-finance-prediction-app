@@ -2,14 +2,11 @@ import { v4 as uuid } from 'uuid';
 import { eq } from 'drizzle-orm';
 import { db } from '../../../db';
 import { details, transaction as tSchema, balance } from '../../../models';
-import {
-  account,
-  // transactions,
-  balances,
-} from '../../../utils/bankDetails.json';
+import { account, balances } from '../../../utils/bankDetails.json';
 import generateUid from '../../../utils/generateUid';
 import * as connector from '../../../goCardless/gocardless';
 import { BadRequest } from '../../../errors';
+import logger from '../../../utils/logger';
 
 const saveBankDetails = async () => {
   const response = account;
@@ -50,7 +47,7 @@ const saveTransactionsToDB = async (accountId: string) => {
         'No transactions available, please try and connect to bank again'
       );
   } catch (err: any) {
-    console.log('Failed to acquire end user account transactions:', err);
+    logger().error('Failed to acquire end user account transactions');
     throw new Error(err.message);
   }
 
@@ -78,6 +75,7 @@ const saveTransactionsToDB = async (accountId: string) => {
     return { command, rowCount };
   } catch (err) {
     console.error(err);
+    logger().error('Failed to save transactions to DB');
     throw err;
   }
 };
@@ -173,7 +171,7 @@ const retrieveBankDataFromDB = async () => {
 
     return fullBankAccount;
   } catch (err) {
-    console.error(err);
+    logger().error('Failed to retrieve bank details');
     throw err;
   }
 };

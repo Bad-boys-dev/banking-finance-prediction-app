@@ -1,15 +1,15 @@
 import * as connector from '../../../goCardless/gocardless';
 import { BadRequest } from '../../../errors';
+import logger from '../../../utils/logger';
 
 const createUserAgreement = async (
   institutionId: string,
   maxHistoricalDays: number,
   accessValidForDays: number,
-  accessScope: string[]
+  accessScope: string[],
+  cid?: string
 ) => {
   const { access } = await connector.retrieveAccessToken();
-  // const { access } = await store();
-
   if (!access) throw new BadRequest('Access token missing!');
 
   let response: object;
@@ -22,8 +22,9 @@ const createUserAgreement = async (
       access_valid_for_days: accessValidForDays,
       access_scope: accessScope,
     });
+    logger(cid, { accessScope }).info('Created new agreement');
   } catch (err) {
-    console.log('Failed to create user agreement:', err);
+    logger(cid).error('Failed to create user agreement');
     throw err;
   }
 
@@ -34,8 +35,6 @@ const createRequisition = async (
   institutionId: string,
   agreementId: string
 ) => {
-  console.log(institutionId, agreementId);
-
   const { access: access_token } = await connector.retrieveAccessToken();
   let response;
   try {
@@ -45,7 +44,7 @@ const createRequisition = async (
       access_token,
     });
   } catch (err: any) {
-    console.log('Failed to create requisition for user:', err);
+    logger(undefined).error('Failed to create requisition for user');
     throw new Error(err.message);
   }
 
@@ -59,7 +58,7 @@ const getRequisitionAccounts = async (requisitionId: string) => {
   try {
     requisition = await connector.getAccounts(requisitionId, access_token);
   } catch (err: any) {
-    console.log('Failed to get requisition for end user:', err);
+    logger(undefined).error('Failed to get a requisition for end user');
     throw new Error(err.message);
   }
 

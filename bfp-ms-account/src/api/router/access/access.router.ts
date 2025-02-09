@@ -20,12 +20,15 @@ router.post(
       accessScope,
     } = req.body;
 
+    const cid = req?.cid;
+
     try {
       const response: object = await service.createUserAgreement(
         institutionId,
         maxHistoricalDays,
         accessValidForDays,
-        accessScope
+        accessScope,
+        cid
       );
       res.status(201).send(response);
     } catch (err: any) {

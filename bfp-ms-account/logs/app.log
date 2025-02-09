@@ -1,0 +1,5 @@
+2025-02-09T16:43:53.111Z [CID: N/A] info: Listening on Port 8083
+2025-02-09T16:44:08.843Z [CID: N/A] info: Incoming Request: POST /api/v1/access/createUserAgreement
+2025-02-09T16:44:08.849Z [CID: 7d9d1bc7-3807-4190-b560-6084cdf2b0a7] error: Failed to create user agreement
+2025-02-09T16:44:21.600Z [CID: N/A] info: Incoming Request: POST /api/v1/access/createUserAgreement
+2025-02-09T16:44:22.262Z [CID: c026040b-9caa-47d9-82ba-f9ebbbda713e] info: Created new agreement | Metadata: {"accessScope":["balances","details","transactions"]}

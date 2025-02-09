@@ -2,7 +2,9 @@
 bfp-ms-account/tsconfig.tsbuildinfo
 bfp-ms-instutions/tsconfig.tsbuildinfo
 bfp-ms-account/build
+bfp-ms-account/app.log
 bfp-ms-instutions/build
+bfp-ms-instutions/app.log
 .env
 .env.local
 /drizzle
