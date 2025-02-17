@@ -101,7 +101,7 @@ const saveBalancesToDB = async (accountId: string) => {
   return { command, rowCount };
 };
 
-const retrieveBankDataFromDB = async () => {
+const retrieveBankDataFromDB = async (log: any) => {
   try {
     const response = await db
       .select({
@@ -114,14 +114,24 @@ const retrieveBankDataFromDB = async () => {
         valueDateTime: tSchema.valueDateTime,
         remittanceInformationUnstructuredArray:
           tSchema.remittanceInformationUnstructuredArray,
+        balanceAmount: balance.balanceAmount,
+        referenceDate: balance.referenceDate,
+        balanceId: balance.id,
       })
       .from(details)
-      .leftJoin(tSchema, eq(details.id, tSchema.accountDetailsId));
+      .leftJoin(tSchema, eq(details.id, tSchema.accountDetailsId))
+      .leftJoin(balance, eq(details.id, balance.accountDetailsId));
 
     type BankDeets = {
       id: string;
       ownerName: string;
-      iban: string;
+      iban?: string;
+      balanceAmount?: {
+        amount?: string;
+        currency?: string;
+      };
+      referenceDate?: string;
+      balanceId: string;
       transactions: {
         id: string;
         transactionAmount: {
@@ -134,7 +144,6 @@ const retrieveBankDataFromDB = async () => {
       }[];
     };
 
-    // TODO: next is to add the account balance details to this array
     const fullBankAccount: BankDeets[] = [];
 
     for (const row of response) {
@@ -167,11 +176,17 @@ const retrieveBankDataFromDB = async () => {
         };
         bankDetail.transactions.push(transaction);
       }
+
+      if (row.balanceId) {
+        bankDetail['balanceAmount'] = row.balanceAmount;
+        bankDetail['referenceDate'] = row.referenceDate;
+      }
     }
+    log.info('Successfully loaded full transactions');
 
     return fullBankAccount;
   } catch (err) {
-    logger().error('Failed to retrieve bank details');
+    log.error('Failed to retrieve bank details');
     throw err;
   }
 };

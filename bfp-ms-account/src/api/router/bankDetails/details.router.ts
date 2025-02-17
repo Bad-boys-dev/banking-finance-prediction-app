@@ -2,11 +2,13 @@ import express, { NextFunction, Request, Response } from 'express';
 import { service } from '../../service/bankDetails/details.service';
 import { transactionsSyncSchema, balancesSyncSchema } from '../../schema';
 import { validateBody } from '../../../middleware';
+import logger from '../../../utils/logger';
 
 const router = express.Router();
 
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
+
     const resp = await service.saveBankDetails();
     res.status(200).send({
       message: `Data ${resp.command} successfully into database!`,
@@ -52,8 +54,10 @@ router.post(
 );
 
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
+  const { cid } = req;
   try {
-    const response = await service.retrieveBankDataFromDB();
+    const log = logger(cid);
+    const response = await service.retrieveBankDataFromDB(log);
     res.status(200).send({ response });
   } catch (err) {
     next(err);
