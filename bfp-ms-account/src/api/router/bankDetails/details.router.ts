@@ -8,7 +8,6 @@ const router = express.Router();
 
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-
     const resp = await service.saveBankDetails();
     res.status(200).send({
       message: `Data ${resp.command} successfully into database!`,

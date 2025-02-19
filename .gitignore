@@ -9,3 +9,4 @@ bfp-ms-instutions/app.log
 .env.local
 /drizzle
 /bfp-ms-account/src/utils/bankDetails.json
+/bfp-ms-account/coverage
