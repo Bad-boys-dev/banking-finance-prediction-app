@@ -1,5 +1,6 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
+import { details, balance, transaction } from './models';
 
 const pool = new Pool({
   host: 'localhost',
@@ -10,4 +11,10 @@ const pool = new Pool({
   ssl: false,
 });
 
-export const db = drizzle(pool);
+export const db = drizzle(pool, {
+  schema: {
+    details,
+    balance,
+    transaction,
+  },
+});

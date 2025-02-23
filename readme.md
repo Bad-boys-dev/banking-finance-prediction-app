@@ -14,7 +14,7 @@ This project is a monorepo that consists of some microservices.
   POST /api/v1/access/createUserAgreement
 ```
 
-| Parameter            | Type        | Description                                            |
+| Body                 | Type        | Description                                            |
 | :------------------- | :---------- | :----------------------------------------------------- |
 | `institutionId`      | `string`    | **Required**. Id of the Institution Id to connect with |
 | `maxHistoricalDays`  | `number`    | **Required**. Max Historical Days                      |
@@ -29,7 +29,7 @@ This project is a monorepo that consists of some microservices.
   POST /api/v1/access/requisitions
 ```
 
-| Parameter       | Type     | Description                                            |
+| Body            | Type     | Description                                            |
 | :-------------- | :------- | :----------------------------------------------------- |
 | `institutionId` | `string` | **Required**. Id of the Institution Id to connect with |
 | `agreementId`   | `string` | **Required**. Id of the agreement the end user created |
