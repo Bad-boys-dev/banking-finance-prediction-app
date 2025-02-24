@@ -9,13 +9,13 @@ export const createUserAgreementSchema = z.object({
       })
       .max(255)
       .min(4),
-    maxHistoricalDays: z.number({
+    maxHistoricalDays: z.string({
       required_error: 'You must have a maxHistoricalDays',
-      invalid_type_error: 'Your maxHistoricalDays must be a number',
+      invalid_type_error: 'Your maxHistoricalDays must be a string',
     }),
-    accessValidForDays: z.number({
+    accessValidForDays: z.string({
       required_error: 'You must have a accessValidForDays',
-      invalid_type_error: 'Your accessValidForDays must be a number',
+      invalid_type_error: 'Your accessValidForDays must be a string',
     }),
   }),
 });

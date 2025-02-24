@@ -18,8 +18,8 @@ const createUserAgreement = async (
     response = await connector.createEndUserAgreement({
       access_token: access,
       institution_id: institutionId,
-      max_historical_days: maxHistoricalDays,
-      access_valid_for_days: accessValidForDays,
+      max_historical_days: +maxHistoricalDays,
+      access_valid_for_days: +accessValidForDays,
       access_scope: accessScope,
     });
     logger(cid, { accessScope }).info('Created new agreement');
