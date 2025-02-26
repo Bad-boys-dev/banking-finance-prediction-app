@@ -2,34 +2,52 @@ import { v4 as uuid } from 'uuid';
 import { eq } from 'drizzle-orm';
 import { db } from '../../../db';
 import { details, transaction as tSchema, balance } from '../../../models';
-import { account, balances } from '../../../utils/bankDetails.json';
 import generateUid from '../../../utils/generateUid';
 import * as connector from '../../../goCardless/gocardless';
 import { BadRequest } from '../../../errors';
 import logger from '../../../utils/logger';
 
-const saveBankDetails = async () => {
-  const response = account;
-  let command;
-  let rowCount;
+const getAccountDetailId = async (ownerName: string) => {
+  const accountDetail: any = await db
+    .select({ id: details.id })
+    .from(details)
+    .where(eq(details.ownerName, ownerName))
+    .limit(1);
+  console.log('...accountDetail', accountDetail);
+  return accountDetail?.length > 0 ? accountDetail[0].id : null;
+};
+
+const saveBankDetails = async (accountId: string) => {
+  let command, rowCount;
+
+  const { access: access_token } = await connector.retrieveAccessToken();
+  let acDetails: any;
+
+  try {
+    ({ account: acDetails } = await connector.accessAccountDetails(
+      accountId,
+      access_token
+    ));
+  } catch (err: any) {
+    logger().error('Failed to retrieve account details');
+    throw new Error('Failed to retrieve account details');
+  }
 
   try {
     //@ts-ignore
     ({ command, rowCount } = await db.insert(details).values({
       id: uuid(),
-      ...response,
+      ...acDetails,
     }));
   } catch (err) {
-    console.error(err);
+    logger().error('Failed to ingest account details');
     throw err;
   }
 
   return { command, rowCount };
 };
 
-const saveTransactionsToDB = async (accountId: string) => {
-  console.log(accountId);
-
+const saveTransactionsToDB = async (accountId: string, ownerName: string) => {
   if (!accountId)
     throw new Error('AccountId is missing, please add to proceed!');
 
@@ -55,17 +73,19 @@ const saveTransactionsToDB = async (accountId: string) => {
   let command, rowCount;
 
   try {
+    const accountDetailsId = await getAccountDetailId(ownerName);
+
+    // @ts-ignore
+    console.log('...accountDetail.id', accountDetailsId);
+
     const mappedTransactions = response?.map((transaction: any) => ({
       id: generateUid({
         creditorName: transaction.creditorName,
         debtorName: transaction.debtorName,
       }),
-      accountDetailsId: 'd2498872-6ac3-480c-b4ef-da4454770ef2', //TODO: to replace with request body input later
+      accountDetailsId,
       ...transaction,
     }));
-
-    console.log('...mappedTransactions', mappedTransactions);
-    console.log('...accountId:', accountId);
 
     //@ts-ignore
     ({ command, rowCount } = await db
@@ -80,28 +100,46 @@ const saveTransactionsToDB = async (accountId: string) => {
   }
 };
 
-const saveBalancesToDB = async (accountId: string) => {
-  const resp = balances;
+const saveBalancesToDB = async (body: { accountId: string, ownerName: string }, log: object|any) => {
+  const { accountId, ownerName } = body;
 
-  let command;
-  let rowCount;
+  let command, rowCount;
+  const { access: access_token } = await connector.retrieveAccessToken();
+  let balances: any;
+
   try {
-    const mappedBalances = resp?.map((balance: any) => ({
+    ({ balances } = await connector.accessAccountBalance(
+      accountId,
+      access_token
+    ));
+  } catch (err: any) {
+    log.error('Failed to retrieve balances', { errMsg: err.message });
+    throw new Error('Failed to access the Account balance.');
+  }
+
+  try {
+    const accountDetailsId = await getAccountDetailId(ownerName);
+    // @ts-ignore
+    console.log('...accountDetail.id', accountDetailsId);
+
+    const mappedBalances: any = balances?.map((balance: any) => ({
       id: uuid(),
-      accountDetailsId: accountId,
+      accountDetailsId,
       ...balance,
     }));
     //@ts-ignore
     ({ command, rowCount } = await db.insert(balance).values(mappedBalances));
+
+    log.info('Successfully ingested retrieved balances', { count: rowCount });
   } catch (err: any) {
-    console.error(err);
+    log.error('Failed to ingest balances');
     throw err;
   }
 
   return { command, rowCount };
 };
 
-const retrieveBankDataFromDB = async (log: any) => {
+const retrieveBankDataFromDB = async (log: object|any) => {
   try {
     const response = await db
       .select({

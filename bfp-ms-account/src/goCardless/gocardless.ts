@@ -118,3 +118,25 @@ export const accessAccounts = async (
     body: null,
     access_token,
   });
+
+export const accessAccountBalance = async (
+  account_id: string,
+  access_token: string
+) =>
+  await goCardlessClient({
+    url: `${process.env.BASE_URL}/api/v2/accounts/${account_id}/balances`,
+    method: 'GET',
+    body: null,
+    access_token,
+  });
+
+export const accessAccountDetails = async (
+  account_id: string,
+  access_token: string
+) =>
+  await goCardlessClient({
+    url: `${process.env.BASE_URL}/api/v2/accounts/${account_id}/details`,
+    method: 'GET',
+    body: null,
+    access_token,
+  });

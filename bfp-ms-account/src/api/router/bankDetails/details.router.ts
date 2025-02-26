@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const resp = await service.saveBankDetails();
+    const resp = await service.saveBankDetails(req.body.accountId);
     res.status(200).send({
       message: `Data ${resp.command} successfully into database!`,
       count: resp.rowCount,
@@ -23,8 +23,8 @@ router.post(
   validateBody(transactionsSyncSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { accountId } = req.body;
-      const resp = await service.saveTransactionsToDB(accountId);
+      const { accountId, ownerName } = req.body;
+      const resp = await service.saveTransactionsToDB(accountId, ownerName);
       res.status(200).send({
         message: `Data ${resp.command} successfully into database!`,
         count: resp.rowCount,
@@ -39,9 +39,10 @@ router.post(
   '/balances/sync',
   validateBody(balancesSyncSchema),
   async (req: Request, res: Response, next: NextFunction) => {
+    const { cid, body } = req;
     try {
-      const { accountId } = req.body;
-      const resp = await service.saveBalancesToDB(accountId);
+      const log = logger(cid);
+      const resp = await service.saveBalancesToDB(body, log);
       res.status(200).send({
         message: `Data ${resp.command} successfully into database!`,
         count: resp.rowCount,
