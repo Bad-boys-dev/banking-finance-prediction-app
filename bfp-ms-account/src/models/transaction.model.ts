@@ -25,9 +25,7 @@ const transactionSchema = pgTable('transactions', {
   remittanceInformationUnstructuredArray: json(
     'remittanceInformationUnstructuredArray'
   ),
-  proprietaryBankTransactionCode: varchar(
-    'proprietaryBankTransactionCode'
-  ),
+  proprietaryBankTransactionCode: varchar('proprietaryBankTransactionCode'),
   internalTransactionId: varchar('internalTransactionId'),
 });
 
