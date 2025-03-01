@@ -1,5 +1,5 @@
 import { v4 as uuid } from 'uuid';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { db } from '../../../db';
 import { details, transaction as tSchema, balance } from '../../../models';
 import generateUid from '../../../utils/generateUid';
@@ -214,9 +214,46 @@ const retrieveBankDataFromDB = async (log: object | any) => {
   }
 };
 
+const retrieveTransactionsByAccountId = async (
+  query: { accountId: string; page: number; limit: number } | any,
+  log: object | any
+) => {
+  const { page, limit, accountId } = query;
+  try {
+    const offSet = (page - 1) * limit;
+    const transactions: any = await db.execute(
+      sql`
+        SELECT *, COUNT(*) OVER() AS total_count 
+        FROM ${tSchema} 
+        WHERE ${tSchema.accountDetailsId} = ${accountId} 
+        LIMIT ${limit} OFFSET ${offSet}
+      `
+    );
+
+    const totalCount = transactions?.rows[0]?.total_count;
+    const totalPages = Math.ceil(totalCount / limit);
+
+    const resp = transactions.rows.map(
+      ({ total_count, ...transaction }: any) => transaction
+    );
+
+    if (resp.length === 0) {
+      log.warn('Account not found, so no transactions found.');
+      return { resp: [], total: 0, page, limit, totalPages: 0 };
+    }
+    log.info('Successfully retrieved transactions from DB');
+
+    return { resp, totalPages, offSet, page, limit };
+  } catch (err: any) {
+    log.error(err.message);
+    throw new Error('Failed to retrieve the transactions');
+  }
+};
+
 export const service = {
   saveBankDetails,
   saveTransactionsToDB,
   saveBalancesToDB,
   retrieveBankDataFromDB,
+  retrieveTransactionsByAccountId,
 };

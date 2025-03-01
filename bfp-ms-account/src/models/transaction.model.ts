@@ -24,11 +24,11 @@ const transactionSchema = pgTable('transactions', {
   debtorAccount: json('debtorAccount'),
   remittanceInformationUnstructuredArray: json(
     'remittanceInformationUnstructuredArray'
-  ).notNull(),
+  ),
   proprietaryBankTransactionCode: varchar(
     'proprietaryBankTransactionCode'
-  ).notNull(),
-  internalTransactionId: varchar('internalTransactionId').notNull(),
+  ),
+  internalTransactionId: varchar('internalTransactionId'),
 });
 
 export default transactionSchema;

@@ -66,4 +66,28 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+router.get(
+  '/transactions',
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { query, cid } = req;
+    try {
+      const log = logger(cid);
+      const { resp, page, limit, offSet, totalPages } =
+        await service.retrieveTransactionsByAccountId(query, log);
+
+      res.status(200).send({
+        data: resp,
+        pagination: {
+          pages: page,
+          limit,
+          offSet,
+          totalPages,
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 export default router;
