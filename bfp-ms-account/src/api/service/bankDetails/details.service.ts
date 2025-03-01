@@ -5,19 +5,8 @@ import { details, transaction as tSchema, balance } from '../../../models';
 import generateUid from '../../../utils/generateUid';
 import * as connector from '../../../goCardless/gocardless';
 import { BadRequest } from '../../../errors';
-import logger from '../../../utils/logger';
 
-const getAccountDetailId = async (ownerName: string) => {
-  const accountDetail: any = await db
-    .select({ id: details.id })
-    .from(details)
-    .where(eq(details.ownerName, ownerName))
-    .limit(1);
-  console.log('...accountDetail', accountDetail);
-  return accountDetail?.length > 0 ? accountDetail[0].id : null;
-};
-
-const saveBankDetails = async (accountId: string) => {
+const saveBankDetails = async (accountId: string, log: object | any) => {
   let command, rowCount;
 
   const { access: access_token } = await connector.retrieveAccessToken();
@@ -29,25 +18,25 @@ const saveBankDetails = async (accountId: string) => {
       access_token
     ));
   } catch (err: any) {
-    logger().error('Failed to retrieve account details');
+    log.error('Failed to retrieve account details');
     throw new Error('Failed to retrieve account details');
   }
 
   try {
     //@ts-ignore
     ({ command, rowCount } = await db.insert(details).values({
-      id: uuid(),
+      id: accountId,
       ...acDetails,
     }));
   } catch (err) {
-    logger().error('Failed to ingest account details');
+    log.error('Failed to ingest account details');
     throw err;
   }
 
   return { command, rowCount };
 };
 
-const saveTransactionsToDB = async (accountId: string, ownerName: string) => {
+const saveTransactionsToDB = async (accountId: string, log: object | any) => {
   if (!accountId)
     throw new Error('AccountId is missing, please add to proceed!');
 
@@ -64,8 +53,10 @@ const saveTransactionsToDB = async (accountId: string, ownerName: string) => {
       throw new BadRequest(
         'No transactions available, please try and connect to bank again'
       );
+
+    log.info('Account transactions have been synced');
   } catch (err: any) {
-    logger().error('Failed to acquire end user account transactions');
+    log.error('Failed to acquire end user account transactions');
     throw new Error(err.message);
   }
 
@@ -73,17 +64,12 @@ const saveTransactionsToDB = async (accountId: string, ownerName: string) => {
   let command, rowCount;
 
   try {
-    const accountDetailsId = await getAccountDetailId(ownerName);
-
-    // @ts-ignore
-    console.log('...accountDetail.id', accountDetailsId);
-
     const mappedTransactions = response?.map((transaction: any) => ({
       id: generateUid({
         creditorName: transaction.creditorName,
         debtorName: transaction.debtorName,
       }),
-      accountDetailsId,
+      accountDetailsId: accountId,
       ...transaction,
     }));
 
@@ -95,13 +81,16 @@ const saveTransactionsToDB = async (accountId: string, ownerName: string) => {
     return { command, rowCount };
   } catch (err) {
     console.error(err);
-    logger().error('Failed to save transactions to DB');
+    log.error('Failed to save transactions to DB');
     throw err;
   }
 };
 
-const saveBalancesToDB = async (body: { accountId: string, ownerName: string }, log: object|any) => {
-  const { accountId, ownerName } = body;
+const saveBalancesToDB = async (
+  body: { accountId: string },
+  log: object | any
+) => {
+  const { accountId } = body;
 
   let command, rowCount;
   const { access: access_token } = await connector.retrieveAccessToken();
@@ -118,13 +107,9 @@ const saveBalancesToDB = async (body: { accountId: string, ownerName: string }, 
   }
 
   try {
-    const accountDetailsId = await getAccountDetailId(ownerName);
-    // @ts-ignore
-    console.log('...accountDetail.id', accountDetailsId);
-
     const mappedBalances: any = balances?.map((balance: any) => ({
       id: uuid(),
-      accountDetailsId,
+      accountDetailsId: accountId,
       ...balance,
     }));
     //@ts-ignore
@@ -139,7 +124,7 @@ const saveBalancesToDB = async (body: { accountId: string, ownerName: string }, 
   return { command, rowCount };
 };
 
-const retrieveBankDataFromDB = async (log: object|any) => {
+const retrieveBankDataFromDB = async (log: object | any) => {
   try {
     const response = await db
       .select({
