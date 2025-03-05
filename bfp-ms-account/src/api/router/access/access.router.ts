@@ -6,6 +6,7 @@ import {
   retrieveAccountSchema,
 } from '../../schema';
 import { validateBody } from '../../../middleware';
+import logger from '../../../utils/logger';
 
 const router = express.Router();
 
@@ -60,6 +61,35 @@ router.get(
     try {
       const response = await service.getRequisitionAccounts(requisitionId);
       res.status(200).send(response);
+    } catch (err: any) {
+      next(err);
+    }
+  }
+);
+
+router.get(
+  '/institution',
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { institutionId } = req.query;
+    try {
+      const log = logger(req.cid);
+      const response = await service.getInstitution(institutionId, log);
+
+      res.status(200).send({ data: response });
+    } catch (err: any) {
+      next(err);
+    }
+  }
+);
+
+router.get(
+  '/requisitions',
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const log = logger(req.cid);
+      const response = await service.getRequisitions(log);
+
+      res.status(200).send({ data: response });
     } catch (err: any) {
       next(err);
     }

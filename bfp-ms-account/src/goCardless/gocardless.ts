@@ -54,6 +54,18 @@ export const lookupInstitutions = async (access_token: string) =>
   });
 
 /**
+ * This function looks up bank institution by id
+ * in the go cardless api
+ */
+export const lookupInstitution = async (access_token: string, id: string) =>
+  await goCardlessClient({
+    url: `${process.env.BASE_URL}/api/v2/institutions/${id}`,
+    method: 'GET',
+    body: null,
+    access_token,
+  });
+
+/**
  * Creates a end user agreement between client and the user
  */
 export const createEndUserAgreement = async ({
@@ -101,6 +113,31 @@ export const getAccounts = async (
   await goCardlessClient({
     url: `${process.env.BASE_URL}/api/v2/requisitions/${requisition_id}`,
     method: 'GET',
+    body: null,
+    access_token,
+  });
+
+/**
+ * Gets all the available bank connections
+ */
+export const lookupRequisitions = async (access_token: string) =>
+  await goCardlessClient({
+    url: `${process.env.BASE_URL}/api/v2/requisitions?limit=5&offset=0`,
+    method: 'GET',
+    body: null,
+    access_token,
+  });
+
+/**
+ * Gets all the available bank connections
+ */
+export const deleteRequisition = async (
+  requisition_id: string,
+  access_token: string
+) =>
+  await goCardlessClient({
+    url: `${process.env.BASE_URL}/api/v2/requisitions/${requisition_id}`,
+    method: 'DELETE',
     body: null,
     access_token,
   });

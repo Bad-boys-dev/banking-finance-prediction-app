@@ -65,8 +65,36 @@ const getRequisitionAccounts = async (requisitionId: string) => {
   return requisition;
 };
 
+const getInstitution = async (institutionId: any, log: object | any) => {
+  const { access: access_token } = await connector.retrieveAccessToken();
+  try {
+    const response = await connector.lookupInstitution(
+      access_token,
+      institutionId
+    );
+    return response;
+  } catch (err: any) {
+    log.error(err.message);
+    throw new Error('Failed to retrieve the institution');
+  }
+};
+
+const getRequisitions = async (log: object | any) => {
+  const { access: access_token } = await connector.retrieveAccessToken();
+  try {
+    const response = await connector.lookupRequisitions(access_token);
+
+    return response;
+  } catch (err: any) {
+    log.error(err.message);
+    throw new Error('Failed to retrieve the requisitions');
+  }
+};
+
 export const service = {
   createUserAgreement,
   createRequisition,
   getRequisitionAccounts,
+  getInstitution,
+  getRequisitions,
 };
