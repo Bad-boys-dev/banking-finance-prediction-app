@@ -68,28 +68,13 @@ router.get(
 );
 
 router.get(
-  '/institution',
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { institutionId } = req.query;
-    try {
-      const log = logger(req.cid);
-      const response = await service.getInstitution(institutionId, log);
-
-      res.status(200).send({ data: response });
-    } catch (err: any) {
-      next(err);
-    }
-  }
-);
-
-router.get(
   '/requisitions',
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const log = logger(req.cid);
       const response = await service.getRequisitions(log);
 
-      res.status(200).send({ data: response });
+      res.status(200).send({ res: response });
     } catch (err: any) {
       next(err);
     }

@@ -1,6 +1,14 @@
 import * as connector from '../../../goCardless/gocardless';
 import { BadRequest } from '../../../errors';
 import logger from '../../../utils/logger';
+import { getAccounts, lookupInstitution } from '../../../goCardless/gocardless';
+
+interface IRequisition {
+  name: string;
+  logo: string;
+  countries: string[];
+  data: { ssn: any; accounts: string[]; status: string; created: Date };
+}
 
 const createUserAgreement = async (
   institutionId: string,
@@ -65,36 +73,48 @@ const getRequisitionAccounts = async (requisitionId: string) => {
   return requisition;
 };
 
-const getInstitution = async (institutionId: any, log: object | any) => {
-  const { access: access_token } = await connector.retrieveAccessToken();
-  try {
-    const response = await connector.lookupInstitution(
-      access_token,
-      institutionId
-    );
-    return response;
-  } catch (err: any) {
-    log.error(err.message);
-    throw new Error('Failed to retrieve the institution');
-  }
-};
-
 const getRequisitions = async (log: object | any) => {
   const { access: access_token } = await connector.retrieveAccessToken();
-  try {
-    const response = await connector.lookupRequisitions(access_token);
+  let res: IRequisition[] = [];
+  let results: any;
 
-    return response;
+  try {
+    ({ results } = await connector.lookupRequisitions(access_token));
+    log.info('Successful lookup of account requisitions');
+
+    if (results.length === 0) return res;
   } catch (err: any) {
     log.error(err.message);
     throw new Error('Failed to retrieve the requisitions');
   }
+
+  for (const result of results) {
+    const { institution_id, created, status, accounts, ssn } = result;
+
+    try {
+      const institution = await connector.lookupInstitution(
+        access_token,
+        institution_id
+      );
+
+      res.push({
+        name: institution.name,
+        logo: institution.logo,
+        countries: institution.countries,
+        data: { ssn, accounts, status, created },
+      });
+    } catch (err: any) {
+      log.error(err.message);
+      throw new Error('Failed to pull back institution details');
+    }
+  }
+
+  return res;
 };
 
 export const service = {
   createUserAgreement,
   createRequisition,
   getRequisitionAccounts,
-  getInstitution,
   getRequisitions,
 };
