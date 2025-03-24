@@ -1,9 +1,13 @@
 {
   "name": "bfp-ms-institutions",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --passWithNoTests",
+    "test:coverage": "jest --coverage --passWithNoTests",
+    "build": "tsc",
+    "start": "node build/app.js",
+    "format": "prettier --write '{src,tests}/**/*.ts'"
   },
   "keywords": [],
   "author": "",
@@ -12,5 +16,46 @@
   "dependencies": {
     "express": "^4.21.2",
     "mongoose": "^8.9.5"
+  },
+  "jest": {
+    "coverageDirectory": "coverage/",
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "dist/",
+      "coverage/",
+      "tests/",
+      "src/index.js",
+      "src/app.js",
+      "src/server.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statemetns": 90,
+        "functions": 95
+      }
+    },
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/build/",
+      "/tests/"
+    ],
+    "roots": [
+      "<rootDir>/"
+    ],
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/test/**/*.+(ts|js)",
+      "**/?(*.)+(spec|test).+(ts|js)"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "verbose": true
+  },
+  "devDependencies": {
+    "tsx": "^4.19.3"
   }
 }
