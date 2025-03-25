@@ -6,26 +6,35 @@ interface IBulkOps {
 }
 
 class BulkOps implements IBulkOps {
-  private model: Model
-  constructor(model: Model) {
+  private model: Model<any>
+  constructor(model: Model<any>) {
     this.model = model;
   }
 
   async bulkWriteInstitutions (data: Institutions[]): Promise<any> {
-    const bulkOps = data.map((institution: Institutions) => ({
-      updateOne: {
-        filter: { _id: institution.id },
-        update: { institution },
-        upsert: true
+    try {
+      const bulkOps = data.map((institution: Institutions) => ({
+        updateOne: {
+          filter: { _id: institution.id },
+          update: { $set: institution },
+          upsert: true
+        }
+      }));
+
+      const response = await this.model.bulkWrite(bulkOps);
+      console.log('Matched', response.matchedCount);
+      console.log(`Modified: ${response.modifiedCount}`);
+      console.log(`Inserted: ${response.upsertedCount}`);
+
+      if(data.length === 0) {
+        return []
       }
-    }));
 
-    const response = await this.model.bulkWrite(bulkOps);
-    console.log('Matched', response.matchedCount);
-    console.log(`Modified: ${response.modifiedCount}`);
-    console.log(`Inserted: ${response.upsertedCount}`);
-
-    return response;
+      return response;
+    } catch (err: any) {
+      console.log(err.message);
+      throw err;
+    }
   }
 }
 

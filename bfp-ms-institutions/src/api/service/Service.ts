@@ -1,18 +1,23 @@
 import { Institutions } from '../../models/institutions-model';
 
 interface IService {
-  lookupInstitutions (): Promise<Array<Institutions>>
+  searchInstitutionsByName (text: string): Promise<Array<Institutions>>
+  lookupInstitutions(): Promise<Array<Institutions>>
 }
 
 class Service implements IService {
-  private connector: any;
+  private db: any;
 
-  constructor(connector: any) {
-    this.connector = connector
+  constructor(db: any) {
+    this.db = db
+  }
+
+  async searchInstitutionsByName(text: any): Promise<Array<Institutions>> {
+    return await this.db.searchByName.searchInstitutionByName(text);
   }
 
   async lookupInstitutions(): Promise<Array<Institutions>> {
-    return await this.connector.getInstitutions();
+    return await this.db.getList.lookupInstitutions();
   }
 }
 

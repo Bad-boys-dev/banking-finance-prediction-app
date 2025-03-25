@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './mongo/connectDB';
 import institutionsRouter from './api/routes/institutions-router';
+import { startSyncingJob } from './index';
 
 dotenv.config();
 const app = express();
@@ -21,6 +22,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/v1/institutions', institutionsRouter);
+
+startSyncingJob()
 
 connectDB().then(() => {
   app.listen(PORT, () => {
