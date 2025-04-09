@@ -1,4 +1,3 @@
-// import { D } from 'drizzle-orm'
 import { inArray, not } from 'drizzle-orm';
 import { DrizzleD1Database } from 'drizzle-orm/d1';
 import _ from 'lodash';
