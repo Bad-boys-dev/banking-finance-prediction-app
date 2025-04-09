@@ -1,120 +1,90 @@
-import * as connector from '../../../goCardless/gocardless';
-import { BadRequest } from '../../../errors';
-import logger from '../../../utils/logger';
-import { getAccounts, lookupInstitution } from '../../../goCardless/gocardless';
+import { BadRequest, NotAuthorized } from '../../../errors';
+import { IConnector, IAccessService } from '../../../types';
 
-interface IRequisition {
-  name: string;
-  logo: string;
-  countries: string[];
-  data: { ssn: any; accounts: string[]; status: string; created: Date };
-}
+// scope access array with the list of access props
+const accessScope = ['balances', 'details', 'transactions'];
 
-const createUserAgreement = async (
-  institutionId: string,
-  maxHistoricalDays: number,
-  accessValidForDays: number,
-  accessScope: string[],
-  cid?: string
-) => {
-  const { access } = await connector.retrieveAccessToken();
-  if (!access) throw new BadRequest('Access token missing!');
-
-  let response: object;
-
-  try {
-    response = await connector.createEndUserAgreement({
-      access_token: access,
-      institution_id: institutionId,
-      max_historical_days: +maxHistoricalDays,
-      access_valid_for_days: +accessValidForDays,
-      access_scope: accessScope,
-    });
-    logger(cid, { accessScope }).info('Created new agreement');
-  } catch (err) {
-    logger(cid).error('Failed to create user agreement');
-    throw err;
+class AccessService implements IAccessService {
+  private readonly connector: IConnector;
+  private logger: object | any;
+  constructor(connector: IConnector, logger: object | any) {
+    this.connector = connector;
+    this.logger = logger;
   }
 
-  return response;
-};
-
-const createRequisition = async (
-  institutionId: string,
-  agreementId: string
-) => {
-  const { access: access_token } = await connector.retrieveAccessToken();
-  let response;
-  try {
-    response = await connector.linkToBuildForUser({
-      institution_id: institutionId,
-      agreement_id: agreementId,
-      access_token,
-    });
-  } catch (err: any) {
-    logger(undefined).error('Failed to create requisition for user');
-    throw new Error(err.message);
-  }
-
-  return response;
-};
-
-const getRequisitionAccounts = async (requisitionId: string) => {
-  const { access: access_token } = await connector.retrieveAccessToken();
-  let requisition: object;
-
-  try {
-    requisition = await connector.getAccounts(requisitionId, access_token);
-  } catch (err: any) {
-    logger(undefined).error('Failed to get a requisition for end user');
-    throw new Error(err.message);
-  }
-
-  return requisition;
-};
-
-const getRequisitions = async (log: object | any) => {
-  const { access: access_token } = await connector.retrieveAccessToken();
-  let res: IRequisition[] = [];
-  let results: any;
-
-  try {
-    ({ results } = await connector.lookupRequisitions(access_token));
-    log.info('Successful lookup of account requisitions');
-
-    if (results.length === 0) return res;
-  } catch (err: any) {
-    log.error(err.message);
-    throw new Error('Failed to retrieve the requisitions');
-  }
-
-  for (const result of results) {
-    const { institution_id, created, status, accounts, ssn } = result;
+  async connectBankAccount(
+    institutionId: any,
+    cid: string | undefined
+  ): Promise<any> {
+    let access: string = '';
 
     try {
-      const institution = await connector.lookupInstitution(
-        access_token,
-        institution_id
+      ({ access } = await this.connector.retrieveAccessToken());
+    } catch (err: any) {
+      throw new Error('Failed to retrieve access token!');
+    }
+
+    if (!access) throw new NotAuthorized('access token is required!');
+
+    try {
+      this.logger(cid).info('Starting process to build a link for user...');
+      const institution = await this.connector.lookupInstitution(
+        access,
+        institutionId
       );
 
-      res.push({
-        name: institution.name,
-        logo: institution.logo,
-        countries: institution.countries,
-        data: { ssn, accounts, status, created },
+      const agreement = await this.connector.createEndUserAgreement({
+        access_token: access,
+        institution_id: institution.id,
+        max_historical_days: 730,
+        access_valid_for_days: 30,
+        access_scope: accessScope,
       });
+
+      const response = await this.connector.linkToBuildForUser({
+        institution_id: institution.id,
+        agreement_id: agreement.id,
+        access_token: access,
+      });
+
+      this.logger(cid).info('Done');
+      return response;
     } catch (err: any) {
-      log.error(err.message);
-      throw new Error('Failed to pull back institution details');
+      this.logger(cid).error(`Failed to build new link: ${err.message}`);
+      throw new Error('Failed to build new link!');
     }
   }
 
-  return res;
-};
+  async retrieveRequisition(
+    requisitionId: string,
+    cid: string | undefined
+  ): Promise<any> {
+    let access: string = '';
 
-export const service = {
-  createUserAgreement,
-  createRequisition,
-  getRequisitionAccounts,
-  getRequisitions,
-};
+    try {
+      ({ access } = await this.connector.retrieveAccessToken());
+    } catch (err: any) {
+      throw new Error("Couldn't to retrieve access token!");
+    }
+
+    if (!access) throw new NotAuthorized('access token is required!');
+
+    let response: object = {};
+    try {
+      response = await this.connector.getAccounts(requisitionId, access);
+      this.logger(cid).info('Loaded account requisition for user');
+    } catch (err: unknown) {
+      if (typeof err === 'object' && err !== null && 'message' in err)
+        console.error(err.message);
+
+      throw new Error('Could not fetch requisition');
+    }
+
+    if (Object.keys(response).length === 0)
+      throw new BadRequest('Account Requisition was not found!');
+
+    return response;
+  }
+}
+
+export default AccessService;

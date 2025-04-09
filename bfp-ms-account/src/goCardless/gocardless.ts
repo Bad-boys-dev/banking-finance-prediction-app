@@ -9,6 +9,14 @@ export interface IBuildLinkPayload {
   access_token: string;
 }
 
+// interface IConnector {
+//   retrieveAccessToken: () => Promise<object|any>;
+//   lookupInstitutions: (access_token: string) => Promise<Array<any>|any>;
+//   lookupInstitution: (access_token: string, id: string) => Promise<object|any>;
+//   createEndUserAgreement: (access_token: string, institution_id: string, max_historical_days: any, access_valid_for_days: any, access_scope: Array<String>) => Promise<object|any>;
+//   linkToBuildForUser: (payload: IBuildLinkPayload) => Promise<object|any>;
+// }
+
 /**
  * This function generates us an access token
  */
@@ -98,7 +106,7 @@ export const linkToBuildForUser = async (payload: IBuildLinkPayload) =>
     body: {
       institution_id: payload.institution_id,
       agreement: payload.agreement_id,
-      redirect: 'http://localhost:5173/oauth/callback',
+      redirect: 'http://localhost:5173',
     },
     access_token: payload.access_token,
   });
