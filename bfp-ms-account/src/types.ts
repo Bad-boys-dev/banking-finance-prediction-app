@@ -1,3 +1,5 @@
+import { accessAccounts } from './goCardless/gocardless';
+
 export interface IAccessService {
   connectBankAccount(institutionId: any, cid: string | undefined): Promise<any>;
   retrieveRequisition(
@@ -39,4 +41,5 @@ export interface IConnector {
     requisition_id: string,
     access_token: string
   ) => Promise<Object>;
+  accessAccounts: (account_id: string, access_token: string) => Promise<any>;
 }
