@@ -20,6 +20,7 @@ class BulkOps {
           creditorName: transaction.creditorName,
           debtorName: transaction.debtorName,
         }),
+        accountDetailsId: accountId,
         ...transaction,
       })
     );
@@ -30,18 +31,18 @@ class BulkOps {
       .onConflictDoUpdate({
         target: this.model.id,
         set: {
-          bookingDate: sql`excluded.bookingDate`,
-          valueDate: sql`excluded.valueDate`,
-          bookingDateTime: sql`excluded.bookingDateTime`,
-          valueDateTime: sql`excluded.valueDateTime`,
-          transactionAmount: sql`excluded.transactionAmount`,
-          creditorName: sql`excluded.creditorName`,
-          creditorAccount: sql`excluded.creditorAccount`,
-          debtorName: sql`excluded.debtorName`,
-          debtorAccount: sql`excluded.debtorAccount`,
-          remittanceInformationUnstructuredArray: sql`excluded.remittanceInformationUnstructuredArray`,
-          proprietaryBankTransactionCode: sql`excluded.proprietaryBankTransactionCode`,
-          internalTransactionId: sql`excluded.internalTransactionId`,
+          bookingDate: sql`${this.model.bookingDate}`,
+          valueDate: sql`${this.model.valueDate}`,
+          bookingDateTime: sql`${this.model.bookingDateTime}`,
+          valueDateTime: sql`${this.model.valueDateTime}`,
+          transactionAmount: sql`${this.model.transactionAmount}`,
+          creditorName: sql`${this.model.creditorName}`,
+          creditorAccount: sql`${this.model.creditorAccount}`,
+          debtorName: sql`${this.model.debtorName}`,
+          debtorAccount: sql`${this.model.debtorAccount}`,
+          remittanceInformationUnstructuredArray: sql`${this.model.remittanceInformationUnstructuredArray}`,
+          proprietaryBankTransactionCode: sql`${this.model.proprietaryBankTransactionCode}`,
+          internalTransactionId: sql`${this.model.internalTransactionId}`,
         },
       });
     return {

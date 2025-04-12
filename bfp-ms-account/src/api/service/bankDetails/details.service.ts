@@ -1,12 +1,5 @@
-import { v4 as uuid } from 'uuid';
-import { eq, sql } from 'drizzle-orm';
-import { db } from '../../../db';
-import { details, transaction as tSchema, balance } from '../../../models';
-import generateUid from '../../../utils/generateUid';
-import * as connector from '../../../goCardless/gocardless';
 import { BadRequest } from '../../../errors';
 import { IConnector, IAccessService } from '../../../types';
-import { accessAccounts } from '../../../goCardless/gocardless';
 
 interface IDetailsService {
   saveBankDetails(log: object | any): Promise<Object>;
@@ -18,7 +11,6 @@ interface IDetailsService {
   retrieveBankDataFromDB(log: object | any): Promise<Array<Object>>;
   // retrieveTransactionsByAccountId(query: { accountId: string; page: number; limit: number } | any,log: object | any): Promise<Object>
 }
-// interface IConnector {}
 
 class AccountsService implements IDetailsService {
   private readonly connector: IConnector;
@@ -46,7 +38,7 @@ class AccountsService implements IDetailsService {
     return Promise.resolve({});
   }
 
-  async saveTransactionsToDB(accountId: string, cid: string): Promise<Object> {
+  async saveTransactionsToDB(accountId: string, cid: any): Promise<Object> {
     let transactions: any = {};
 
     try {
@@ -59,7 +51,7 @@ class AccountsService implements IDetailsService {
       this.log(cid).error('Failed to sync transactions');
     }
 
-    if (transactions.booked.length === 0)
+    if (transactions.booked?.length === 0)
       throw new BadRequest('No transactions found, hotshot!');
 
     let dbTransaction;

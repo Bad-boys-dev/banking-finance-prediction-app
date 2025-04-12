@@ -3,6 +3,7 @@ import express, { NextFunction, Request, Response } from 'express';
 import { transactionsSyncSchema, balancesSyncSchema } from '../../schema';
 import { validateBody } from '../../../middleware';
 import logger from '../../../utils/logger';
+import { detailsService as service } from '../../../app';
 
 const router = express.Router();
 
@@ -19,23 +20,32 @@ const router = express.Router();
 //   }
 // });
 //
-// router.post(
-//   '/transactions/sync',
-//   validateBody(transactionsSyncSchema),
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     try {
-//       const { accountId } = req.body;
-//       const log = logger(req.cid);
-//       const resp = await service.saveTransactionsToDB(accountId, log);
-//       res.status(200).send({
-//         message: `Data ${resp.command} successfully into database!`,
-//         count: resp.rowCount,
-//       });
-//     } catch (err) {
-//       next(err);
-//     }
-//   }
-// );
+router.post(
+  '/transactions/sync',
+  validateBody(transactionsSyncSchema),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { accountId } = req.body;
+      const resp: Object = await service.saveTransactionsToDB(
+        accountId,
+        req?.cid
+      );
+
+      if (
+        typeof resp === 'object' &&
+        resp !== null &&
+        'command' in resp &&
+        'rowCount' in resp
+      )
+        res.status(200).send({
+          message: `Data ${resp.command} successfully into database!`,
+          count: resp.rowCount,
+        });
+    } catch (err) {
+      next(err);
+    }
+  }
+);
 
 // router.post(
 //   '/balances/sync',
