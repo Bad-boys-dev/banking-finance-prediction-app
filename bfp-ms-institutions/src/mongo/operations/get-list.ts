@@ -2,7 +2,8 @@ import { Model } from 'mongoose';
 import { Institutions } from '../../models/institutions-model';
 
 interface IGetList {
-  lookupInstitutions (): Promise<Array<Institutions>>
+  lookupInstitutions (limit?: number, skip?: number): Promise<Array<Institutions>>
+  countInstitutions(): Promise<Number>
 }
 
 class GetList implements IGetList {
@@ -11,14 +12,25 @@ class GetList implements IGetList {
     this.model = model;
   }
 
-  async lookupInstitutions(): Promise<Array<Institutions>> {
-    const institutions = await this.model.find({});
+  async lookupInstitutions(limit?: number, skip?: number): Promise<Array<Institutions>> {
+    let institutions
+    if (typeof limit === 'number' && typeof skip === 'number') {
+      institutions = await this.model.find({}).limit(limit).skip(skip);
+    }
 
     if(!institutions) {
       return []
     }
 
     return institutions
+  }
+
+  async countInstitutions(): Promise<Number> {
+    const count = await this.model.countDocuments()
+
+    if(!count) return 0
+
+    return count
   }
 }
 

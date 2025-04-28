@@ -1,5 +1,8 @@
 import { BadRequest } from '../../../errors';
 import { IConnector, IAccessService } from '../../../types';
+import { retrieveTransactions } from '../../../app';
+import { transaction } from '../../../models';
+import logger from '../../../utils/logger';
 
 interface IDetailsService {
   saveBankDetails(log: object | any): Promise<Object>;
@@ -9,12 +12,16 @@ interface IDetailsService {
     log: object | any
   ): Promise<Object>;
   retrieveBankDataFromDB(log: object | any): Promise<Array<Object>>;
-  // retrieveTransactionsByAccountId(query: { accountId: string; page: number; limit: number } | any,log: object | any): Promise<Object>
+
+  retrieveTransactionsByAccountId(
+    query: any,
+    cid: string | undefined
+  ): Promise<any>;
 }
 
 class AccountsService implements IDetailsService {
   private readonly connector: IConnector;
-  private ops: any;
+  private readonly ops: any;
   private log: object | any;
 
   constructor(connector: IConnector, ops: any, log: object | any) {
@@ -40,6 +47,7 @@ class AccountsService implements IDetailsService {
 
   async saveTransactionsToDB(accountId: string, cid: any): Promise<Object> {
     let transactions: any = {};
+    const { bulkOps } = this.ops;
 
     try {
       const { access } = await this.connector.retrieveAccessToken();
@@ -56,7 +64,7 @@ class AccountsService implements IDetailsService {
 
     let dbTransaction;
     if (typeof transactions === 'object' && 'booked' in transactions)
-      dbTransaction = await this.ops.bulkWriteOps(
+      dbTransaction = await bulkOps.bulkWriteOps(
         transactions?.booked,
         accountId
       );
@@ -66,6 +74,56 @@ class AccountsService implements IDetailsService {
 
   retrieveBankDataFromDB(log: any): Promise<Array<Object>> {
     return Promise.resolve([]);
+  }
+
+  async retrieveTransactionsByAccountId(
+    query: any,
+    cid: string | undefined
+  ): Promise<any> {
+    const accountId = String(query.accountId);
+
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 5;
+
+    const offSet = (page - 1) * limit;
+    const { retrieveTransactions } = this.ops;
+
+    try {
+      const rows = await retrieveTransactions.getTransactionsByAccountId(
+        accountId,
+        { limit, offSet },
+        {
+          bookingDate: transaction.bookingDate,
+          valueDate: transaction.valueDate,
+          transactionAmount: transaction.transactionAmount,
+          creditorName: transaction.creditorName,
+          debtorName: transaction.debtorName,
+          remittanceInformationUnstructuredArray:
+            transaction.remittanceInformationUnstructuredArray,
+          proprietaryBankTransactionCode:
+            transaction.proprietaryBankTransactionCode,
+          internalTransactionId: transaction.internalTransactionId,
+        }
+      );
+
+      const totalCount =
+        await retrieveTransactions.getTransactionCount(accountId);
+      const totalPages = Math.ceil(totalCount / limit);
+      this.log(cid).info('Loaded transactions from table successfully');
+      return {
+        rows,
+        pagination: {
+          pages: page,
+          limit,
+          offSet,
+          totalPages,
+        },
+      };
+    } catch (err: any) {
+      throw new Error(
+        `Failed to retrieve transactions from DB: ${err.message}`
+      );
+    }
   }
 }
 

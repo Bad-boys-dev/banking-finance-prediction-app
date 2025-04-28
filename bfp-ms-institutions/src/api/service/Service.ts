@@ -2,7 +2,8 @@ import { Institutions } from '../../models/institutions-model';
 
 interface IService {
   searchInstitutionsByName (text: string): Promise<Array<Institutions>>
-  lookupInstitutions(): Promise<Array<Institutions>>
+
+  lookupInstitutions(page: number, limit: number): Promise<{ institutions: any; pagination: { pages: number; offset: number; limit: number; totalPages: number } }>
 }
 
 class Service implements IService {
@@ -16,8 +17,23 @@ class Service implements IService {
     return await this.db.searchByName.searchInstitutionByName(text);
   }
 
-  async lookupInstitutions(): Promise<Array<Institutions>> {
-    return await this.db.getList.lookupInstitutions();
+  async lookupInstitutions(page: number, limit: number): Promise<{ institutions: any; pagination: { pages: number; offset: number; limit: number; totalPages: number } }> {
+    const offset = (page - 1) * limit;
+
+    const count = (await this.db.getList.countInstitutions());
+    const totalPages = Math.ceil(count / limit);
+
+    const institutions = await this.db.getList.lookupInstitutions(limit, offset);
+
+    return {
+      institutions,
+      pagination: {
+        pages: page,
+        limit,
+        offset,
+        totalPages,
+      }
+    }
   }
 }
 

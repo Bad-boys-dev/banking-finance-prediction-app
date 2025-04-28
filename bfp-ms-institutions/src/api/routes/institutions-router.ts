@@ -15,8 +15,10 @@ router.get('/', async (req: Request, res: Response) => {
 });
 
 router.get('/all', async (req: Request, res: Response) => {
+  const page = Number(req.query.page)
+  const limit = Number(req.query.limit);
   try {
-    const resp = await service.lookupInstitutions();
+    const resp = await service.lookupInstitutions(page, limit);
     res.status(200).send(resp);
   } catch (err: any) {
     res.status(500).send({ message: err.message });

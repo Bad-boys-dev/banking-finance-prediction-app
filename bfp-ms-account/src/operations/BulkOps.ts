@@ -1,11 +1,12 @@
 import { inArray, not, sql } from 'drizzle-orm';
 import { DrizzleD1Database } from 'drizzle-orm/d1';
 import _ from 'lodash';
+import { v4 as uuid } from 'uuid';
 import generateUid from '../utils/generateUid';
 
 class BulkOps {
   private db: DrizzleD1Database;
-  private model: any;
+  private readonly model: any;
 
   constructor(db: DrizzleD1Database, model: any) {
     this.db = db;
@@ -50,6 +51,10 @@ class BulkOps {
       rowCount,
     };
   };
+
+  // async bulkWriteBankDetails(detail: object) {
+  //   const { command, rowCount } = await this.db.insert(this.model)
+  // }
 }
 
 export default BulkOps;
