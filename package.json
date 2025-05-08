@@ -12,7 +12,9 @@
     "test-c-ac-service": "npm run test:coverage --workspace bfp-ms-account",
     "bfp-ms-account": "npm run start --workspace bfp-ms-account",
     "build-account-service": "npm run build -w bfp-ms-account",
-    "format-account-service": "npm run format -w bfp-ms-account"
+    "build-institutions-service": "npm run build -w bfp-ms-institutions",
+    "format-account-service": "npm run format -w bfp-ms-account",
+    "format-institutions-service": "npm run format -w bfp-ms-institutions"
   },
   "author": "Emmanuel Okuchukwu and Anoj Kunes",
   "license": "ISC",
@@ -21,6 +23,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
+    "@types/lodash": "^4.17.16",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3",
     "winston": "^3.17.0"

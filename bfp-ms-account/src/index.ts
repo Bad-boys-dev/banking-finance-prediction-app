@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import detailsRouter from './api/router/bankDetails/details.router';
 import accessRouter from './api/router/access/access.router';
+import requisitionRouter from './api/router/requisitions/requisitions.router';
 import { ErrorHandler, retrieveCid } from './middleware';
 import logger from './utils/logger';
 
@@ -26,6 +27,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 app.use('/api/v1/details', detailsRouter);
 app.use('/api/v1/access', accessRouter);
+app.use('/api/v1/requisitions', requisitionRouter);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to the account service!');

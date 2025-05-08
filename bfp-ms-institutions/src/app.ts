@@ -23,7 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/v1/institutions', institutionsRouter);
 
-startSyncingJob()
+startSyncingJob();
 
 connectDB().then(() => {
   app.listen(PORT, () => {
