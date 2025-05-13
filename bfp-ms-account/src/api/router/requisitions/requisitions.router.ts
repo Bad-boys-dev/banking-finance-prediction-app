@@ -39,9 +39,9 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction)  =
   try {
     const { access: accessToken } = await retrieveAccessToken();
     logger(cid).info('Access token fetched...')
-    await deleteRequisition(id, accessToken);
+    const response = await deleteRequisition(id, accessToken);
 
-    res.status(200).send({ message: 'Requisition has been deleted!' });
+    res.status(200).send({ result: response });
   } catch(err: any) {
     next(err);
   }
