@@ -25,12 +25,11 @@ class BulkOps {
         ...transaction,
       })
     );
-    // const currentIds = _.map(mappedTransactions, transaction => transaction.id);
     const { command, rowCount } = await this.db
       .insert(this.model)
       .values(mappedTransactions)
       .onConflictDoUpdate({
-        target: this.model.id,
+        target: [this.model.id],
         set: {
           bookingDate: sql`${this.model.bookingDate}`,
           valueDate: sql`${this.model.valueDate}`,

@@ -29,7 +29,16 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
     const { command, rowCount } = await db.insert(details).values({
       id: req.body.accountId,
       ...acDetails,
-    });
+    }).onConflictDoUpdate({
+      target: [details.id],
+      set: {
+        resourceId: details.resourceId,
+        iban: details.iban,
+        scan: details.scan,
+        currency: details.currency,
+        ownerName: details.ownerName,
+      }
+    })
     res.status(200).send({
       message: `Data ${command} successfully into database!`,
       count: rowCount,
@@ -88,14 +97,39 @@ router.post(
       const mappedBalances = balances.map((balance: any) => ({
         id: uuid(),
         accountDetailsId: body.accountId,
-        ...balance
+        balanceAmount: balance.balanceAmount,
+        balanceType: balance.balanceType,
+        referenceDate: balance.referenceDate
       }))
+      console.log('...mappedBalances', mappedBalances);
 
-      const { command, rowCount } = await db.insert(balance).values(mappedBalances)
+      let upsertCount = 0;
+
+      for(const b of mappedBalances) {
+        const res = await db.insert(balance).values(mappedBalances).onConflictDoUpdate({
+          target: [balance.id],
+          set: {
+            balanceAmount: b.balanceAmount,
+            balanceType: b?.balanceType,
+            referenceDate: b?.referenceDate,
+          }
+        });
+
+        upsertCount += res.rowCount ?? 1
+      }
+
+      // const { command, rowCount } = await db.insert(balance).values(mappedBalances).onConflictDoUpdate({
+      //   target: [balance.id],
+      //   set: {
+      //     balanceAmount: balance.balanceAmount,
+      //     balanceType: balance?.balanceType,
+      //     referenceDate: balance?.referenceDate,
+      //   }
+      // });
 
       res.status(200).send({
-        message: `Data ${command} successfully into database!`,
-        count: rowCount,
+        message: `Successfully inserted ${upsertCount} into database!`,
+        count: upsertCount,
       });
     } catch (err) {
       next(err);
@@ -103,7 +137,7 @@ router.post(
   }
 );
 
-// Endpoint to get return account data for the purposes fo predicating
+// Endpoint to get return account data for the purposes for predicating
 // router.get('/', async (req: Request, res: Response, next: NextFunction) => {
 //   const { cid, query } = req;
 //   const accountId = String(query.accountId);
