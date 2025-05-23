@@ -1,6 +1,9 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { service } from '../../../app';
-import { getAccounts, retrieveAccessToken } from '../../../goCardless/gocardless';
+import {
+  getAccounts,
+  retrieveAccessToken,
+} from '../../../goCardless/gocardless';
 
 const router = express.Router();
 
@@ -38,17 +41,20 @@ router.get(
   }
 );
 
-router.get('/accounts/:reference', async (req: Request, res: Response, next: NextFunction) => {
-  const reference = String(req.params.reference);
-  try {
-    const token = await retrieveAccessToken();
+router.get(
+  '/accounts/:reference',
+  async (req: Request, res: Response, next: NextFunction) => {
+    const reference = String(req.params.reference);
+    try {
+      const token = await retrieveAccessToken();
 
-    const accounts = await getAccounts(reference, token.access)
+      const accounts = await getAccounts(reference, token.access);
 
-    res.status(200).send({ response: accounts });
-  } catch(err) {
-    next(err)
+      res.status(200).send({ response: accounts });
+    } catch (err) {
+      next(err);
+    }
   }
-})
+);
 
 export default router;

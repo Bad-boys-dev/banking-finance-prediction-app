@@ -1,8 +1,4 @@
-import {
-  pgTable,
-  varchar,
-  text,
-} from 'drizzle-orm/pg-core';
+import { pgTable, varchar, text } from 'drizzle-orm/pg-core';
 
 const userSchema = pgTable('users', {
   id: text('id').primaryKey(),

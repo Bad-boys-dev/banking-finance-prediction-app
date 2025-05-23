@@ -21,24 +21,27 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
       access_token
     );
 
-    if(!acDetails) {
+    if (!acDetails) {
       log.error('Could not find account details');
-      throw new Error('Could not find account details')
+      throw new Error('Could not find account details');
     }
 
-    const { command, rowCount } = await db.insert(details).values({
-      id: req.body.accountId,
-      ...acDetails,
-    }).onConflictDoUpdate({
-      target: [details.id],
-      set: {
-        resourceId: details.resourceId,
-        iban: details.iban,
-        scan: details.scan,
-        currency: details.currency,
-        ownerName: details.ownerName,
-      }
-    })
+    const { command, rowCount } = await db
+      .insert(details)
+      .values({
+        id: req.body.accountId,
+        ...acDetails,
+      })
+      .onConflictDoUpdate({
+        target: [details.id],
+        set: {
+          resourceId: details.resourceId,
+          iban: details.iban,
+          scan: details.scan,
+          currency: details.currency,
+          ownerName: details.ownerName,
+        },
+      });
     res.status(200).send({
       message: `Data ${command} successfully into database!`,
       count: rowCount,
@@ -89,8 +92,8 @@ router.post(
         access_token
       );
 
-      if(balances.length === 0) {
-        log.error('No account balances found')
+      if (balances.length === 0) {
+        log.error('No account balances found');
         throw new Error('No account balances found');
       }
 
@@ -99,23 +102,26 @@ router.post(
         accountDetailsId: body.accountId,
         balanceAmount: balance.balanceAmount,
         balanceType: balance.balanceType,
-        referenceDate: balance.referenceDate
-      }))
+        referenceDate: balance.referenceDate,
+      }));
       console.log('...mappedBalances', mappedBalances);
 
       let upsertCount = 0;
 
-      for(const b of mappedBalances) {
-        const res = await db.insert(balance).values(mappedBalances).onConflictDoUpdate({
-          target: [balance.id],
-          set: {
-            balanceAmount: b.balanceAmount,
-            balanceType: b?.balanceType,
-            referenceDate: b?.referenceDate,
-          }
-        });
+      for (const b of mappedBalances) {
+        const res = await db
+          .insert(balance)
+          .values(mappedBalances)
+          .onConflictDoUpdate({
+            target: [balance.id],
+            set: {
+              balanceAmount: b.balanceAmount,
+              balanceType: b?.balanceType,
+              referenceDate: b?.referenceDate,
+            },
+          });
 
-        upsertCount += res.rowCount ?? 1
+        upsertCount += res.rowCount ?? 1;
       }
 
       // const { command, rowCount } = await db.insert(balance).values(mappedBalances).onConflictDoUpdate({
@@ -137,20 +143,6 @@ router.post(
   }
 );
 
-// Endpoint to get return account data for the purposes for predicating
-// router.get('/', async (req: Request, res: Response, next: NextFunction) => {
-//   const { cid, query } = req;
-//   const accountId = String(query.accountId);
-//   console.log('accountId', accountId);
-//   try {
-//     const log = logger(cid);
-//     const response = await service.retrieveBankDataFromDB(log);
-//
-//     res.status(200).send({ response });
-//   } catch (err: any) {
-//     next(err);
-//   }
-// });
 //@ts-ignore
 router.get(
   '/transactions',
@@ -171,46 +163,58 @@ router.get(
   }
 );
 
-router.get('/get-balances', async (req: Request, res: Response, next: NextFunction) => {
-  const { cid, query } = req;
-  const accountId = query.accountId as string;
+router.get(
+  '/get-balances',
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { cid, query } = req;
+    const accountId = query.accountId as string;
 
-  const log = logger(cid)
-  try {
-    const balances = await db.select({
-      id: balance.id,
-      balanceAmount: balance.balanceAmount,
-      balanceType: balance.balanceType,
-      referenceDate: balance.referenceDate
-    }).from(balance).where(and(eq(balance.accountDetailsId, accountId)));
-    log.info('Balances loaded by account Id.');
+    const log = logger(cid);
+    try {
+      const balances = await db
+        .select({
+          id: balance.id,
+          balanceAmount: balance.balanceAmount,
+          balanceType: balance.balanceType,
+          referenceDate: balance.referenceDate,
+        })
+        .from(balance)
+        .where(and(eq(balance.accountDetailsId, accountId)));
+      log.info('Balances loaded by account Id.');
 
-    res.status(200).send({ res: balances });
-  } catch(err: any) {
-    next(err);
+      res.status(200).send({ res: balances });
+    } catch (err: any) {
+      next(err);
+    }
   }
-})
+);
 
-router.get('/get-bank-details/:id', async (req: Request, res: Response, next: NextFunction) => {
-  const { cid, params } = req;
-  const accountId = params.id as string;
+router.get(
+  '/get-bank-details/:id',
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { cid, params } = req;
+    const accountId = params.id as string;
 
-  const log = logger(cid);
-  try {
-    const [bankDetails] = await db.select({
-      id: details.id,
-      resourceId: details.resourceId,
-      iban: details.iban,
-      scan: details.scan,
-      currency: details.currency,
-      ownerName: details.ownerName
-    }).from(details).where(and(eq(details.id, accountId)))
-    log.info('Balances loaded by account Id.');
+    const log = logger(cid);
+    try {
+      const [bankDetails] = await db
+        .select({
+          id: details.id,
+          resourceId: details.resourceId,
+          iban: details.iban,
+          scan: details.scan,
+          currency: details.currency,
+          ownerName: details.ownerName,
+        })
+        .from(details)
+        .where(and(eq(details.id, accountId)));
+      log.info('Balances loaded by account Id.');
 
-    res.status(200).send({ res: bankDetails });
-  } catch(err: any) {
-    next(err);
+      res.status(200).send({ res: bankDetails });
+    } catch (err: any) {
+      next(err);
+    }
   }
-})
+);
 
 export default router;
