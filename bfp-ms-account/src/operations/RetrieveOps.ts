@@ -27,21 +27,27 @@ class RetrieveOps implements IRetrieveOps {
   async getTransactionsByAccountId(
     accountId: string,
     paginationObj: {
-      limit: number;
-      offSet: number;
+      limit?: number;
+      offSet?: number;
     },
     payload: any
   ): Promise<Array<any>> {
-    const response: any[] = await this.db
+    let query: any = this.db
       .select(payload)
       .from(this.model)
-      .where(and(eq(this.model.accountDetailsId, accountId)))
-      .limit(paginationObj.limit)
-      .offset(paginationObj.offSet);
+      .where(and(eq(this.model.accountDetailsId, accountId)));
 
-    if (response.length === 0) return [];
+    // Conditionally apply limit and offset only if both exist and are valid
+    if (
+      typeof paginationObj.limit === 'number' &&
+      typeof paginationObj.offSet === 'number'
+    ) {
+      query = query.limit(paginationObj.limit).offset(paginationObj.offSet);
+    }
 
-    return response;
+    const response = await query;
+
+    return response.length === 0 ? [] : response;
   }
 
   async getTransactionCount(accountId: string) {
