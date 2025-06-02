@@ -76,14 +76,17 @@ class AccountsService implements IDetailsService {
     return Promise.resolve([]);
   }
 
-  async retrieveTransactionsByAccountId(query: any, cid: string | undefined): Promise<any> {
+  async retrieveTransactionsByAccountId(
+    query: any,
+    cid: string | undefined
+  ): Promise<any> {
     const accountId = String(query.accountId);
 
     const hasPagination = query.page && query.limit;
 
     const page = hasPagination ? Number(query.page) : undefined;
     const limit = hasPagination ? Number(query.limit) : undefined;
-    const offSet = (page && limit) ? (page - 1) * limit : undefined;
+    const offSet = page && limit ? (page - 1) * limit : undefined;
 
     const { retrieveTransactions } = this.ops;
 
@@ -98,14 +101,15 @@ class AccountsService implements IDetailsService {
           creditorName: transaction.creditorName,
           debtorName: transaction.debtorName,
           remittanceInformationUnstructuredArray:
-          transaction.remittanceInformationUnstructuredArray,
+            transaction.remittanceInformationUnstructuredArray,
           proprietaryBankTransactionCode:
-          transaction.proprietaryBankTransactionCode,
+            transaction.proprietaryBankTransactionCode,
           internalTransactionId: transaction.internalTransactionId,
         }
       );
 
-      const totalCount = await retrieveTransactions.getTransactionCount(accountId);
+      const totalCount =
+        await retrieveTransactions.getTransactionCount(accountId);
       const totalPages = limit ? Math.ceil(totalCount / limit) : 1;
 
       this.log(cid).info('Loaded transactions from table successfully');
@@ -113,15 +117,17 @@ class AccountsService implements IDetailsService {
         rows,
         pagination: hasPagination
           ? {
-            page,
-            limit,
-            offSet,
-            totalPages,
-          }
+              page,
+              limit,
+              offSet,
+              totalPages,
+            }
           : null,
       };
     } catch (err: any) {
-      throw new Error(`Failed to retrieve transactions from DB: ${err.message}`);
+      throw new Error(
+        `Failed to retrieve transactions from DB: ${err.message}`
+      );
     }
   }
 }
