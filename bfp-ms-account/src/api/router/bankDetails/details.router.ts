@@ -8,6 +8,7 @@ import { detailsService as service } from '../../../app';
 import { db } from '../../../db';
 import * as connector from '../../../goCardless/gocardless';
 import { details, balance } from '../../../models';
+import { getAccounts } from '../../../goCardless/gocardless';
 
 const router = express.Router();
 
@@ -104,38 +105,32 @@ router.post(
         balanceType: balance.balanceType,
         referenceDate: balance.referenceDate,
       }));
-      console.log('...mappedBalances', mappedBalances);
 
-      let upsertCount = 0;
+      const [existingBalance] = await db.select().from(balance).where(eq(balance.accountDetailsId, body.accountId)).limit(1);
+      let command: any;
+      let rowCount: any
 
-      for (const b of mappedBalances) {
-        const res = await db
-          .insert(balance)
-          .values(mappedBalances)
-          .onConflictDoUpdate({
+      await db.transaction(async trx => {
+        if (body.accountId === existingBalance?.accountDetailsId) {
+          // this should only run if there is an existing accountId in the balances table
+          await trx.delete(balance).where(eq(balance.accountDetailsId, body.accountId));
+          ({ command, rowCount } = await trx.insert(balance).values(mappedBalances).onConflictDoUpdate({
             target: [balance.id],
             set: {
-              balanceAmount: b.balanceAmount,
-              balanceType: b?.balanceType,
-              referenceDate: b?.referenceDate,
-            },
-          });
-
-        upsertCount += res.rowCount ?? 1;
-      }
-
-      // const { command, rowCount } = await db.insert(balance).values(mappedBalances).onConflictDoUpdate({
-      //   target: [balance.id],
-      //   set: {
-      //     balanceAmount: balance.balanceAmount,
-      //     balanceType: balance?.balanceType,
-      //     referenceDate: balance?.referenceDate,
-      //   }
-      // });
+              balanceAmount: balance.balanceAmount,
+              balanceType: balance?.balanceType,
+              referenceDate: balance?.referenceDate,
+            }
+          }));
+        } else {
+          // this should only run if there is no accountId in the balances table
+          ({ command, rowCount } = await trx.insert(balance).values(mappedBalances));
+        }
+      })
 
       res.status(200).send({
-        message: `Successfully inserted ${upsertCount} into database!`,
-        count: upsertCount,
+        message: `Data ${command} successfully into database!`,
+        count: rowCount,
       });
     } catch (err) {
       next(err);
@@ -143,10 +138,8 @@ router.post(
   }
 );
 
-//@ts-ignore
 router.get(
   '/transactions',
-  //@ts-ignore
   async (req: Request, res: Response, next: NextFunction) => {
     const { cid, query } = req;
     try {
