@@ -106,38 +106,26 @@ router.post(
         referenceDate: balance.referenceDate,
       }));
 
-      const [existingBalance] = await db
-        .select()
-        .from(balance)
-        .where(eq(balance.accountDetailsId, body.accountId))
-        .limit(1);
       let command: any;
       let rowCount: any;
 
       await db.transaction(async trx => {
-        if (body.accountId === existingBalance?.accountDetailsId) {
-          // this should only run if there is an existing accountId in the balances table
-          await trx
-            .delete(balance)
-            .where(eq(balance.accountDetailsId, body.accountId));
-          ({ command, rowCount } = await trx
-            .insert(balance)
-            .values(mappedBalances)
-            .onConflictDoUpdate({
-              target: [balance.id],
-              set: {
-                balanceAmount: balance.balanceAmount,
-                balanceType: balance?.balanceType,
-                referenceDate: balance?.referenceDate,
-              },
-            }));
-        } else {
-          // this should only run if there is no accountId in the balances table
-          ({ command, rowCount } = await trx
-            .insert(balance)
-            .values(mappedBalances));
-        }
+        await trx
+          .delete(balance)
+          .where(eq(balance.accountDetailsId, body.accountId));
+        ({ command, rowCount } = await trx
+          .insert(balance)
+          .values(mappedBalances)
+          .onConflictDoUpdate({
+            target: [balance.id],
+            set: {
+              balanceAmount: balance.balanceAmount,
+              balanceType: balance?.balanceType,
+              referenceDate: balance?.referenceDate,
+            },
+          }));
       });
+      log.info('Successfully synced balance data');
 
       res.status(200).send({
         message: `Data ${command} successfully into database!`,
