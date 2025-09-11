@@ -13,20 +13,15 @@ const transactionSchema = pgTable('transactions', {
   accountDetailsId: text('account_Details_Id').references(
     (): AnyPgColumn => details.id
   ),
-  bookingDate: varchar('bookingDate'),
-  valueDate: varchar('valueDate'),
-  bookingDateTime: date('bookingDateTime'),
-  valueDateTime: date('valueDateTime'),
-  transactionAmount: json('transactionAmount').notNull(),
-  creditorName: varchar('creditorName'),
-  creditorAccount: json('creditorAccount'),
-  debtorName: varchar('debtorName'),
-  debtorAccount: json('debtorAccount'),
-  remittanceInformationUnstructuredArray: json(
-    'remittanceInformationUnstructuredArray'
-  ),
-  proprietaryBankTransactionCode: varchar('proprietaryBankTransactionCode'),
-  internalTransactionId: varchar('internalTransactionId'),
+  bookingDate: date('booking_date').notNull(),
+  valueDate: date('value_date').notNull(),
+  transactionAmount: json('transaction_amount').notNull(),
+  creditorName: varchar('creditor_name').notNull(),
+  creditorAccount: json('creditor_account'),
+  debtorName: varchar('debtor_name').notNull(),
+  debtorAccount: json('debtor_account'),
+  transactionName: varchar('transaction_name').notNull(),
+  transactionType: varchar('transaction_type').notNull(),
 });
 
 export default transactionSchema;

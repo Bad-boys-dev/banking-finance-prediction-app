@@ -62,6 +62,12 @@ class AccountsService implements IDetailsService {
     if (transactions.booked?.length === 0)
       throw new BadRequest('No transactions found, hotshot!');
 
+    let transactionsToReturn = []
+
+    for(const transaction of transactions?.booked) {
+
+    }
+
     let dbTransaction;
     if (typeof transactions === 'object' && 'booked' in transactions)
       dbTransaction = await bulkOps.bulkWriteOps(
